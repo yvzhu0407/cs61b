@@ -4,6 +4,8 @@ import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,14 +13,17 @@ import java.util.Random;
 /**
  * Draws a world consisting of hexagonal regions.
  */
-public class HexWorld {
-    private final double DEFAULT_LOAD_FACTOR = 0.4;
-    private final double DEFAULT_LIMIT_FACOTR = 0.2;
-    private final int WIDTH = 50;
-    private final int HEIGHT = 50;
-
+public class HexWorld implements Serializable {
+    private final int WIDTH = 80;
+    private final int HEIGHT = 30;
+    transient public TETile[][] world = null;
+    public int x = -1,y = -1;
+    public int seed = -1;
+    private boolean inital = false;
+    private int[][] map = null;
+    private static final long serialVersionUID = 12345654321789L;
     //unite the two room
-    void unite(int[] r1,int[] r2,int[][] map,Random random){
+    void unite(int[] r1,int[] r2){
         //get the two rooms core position
         int mx1 = r1[0] + r1[2] / 2;
         int my1 = r1[1] + r1[3] / 2;
@@ -69,10 +74,11 @@ public class HexWorld {
      * @param seed
      * @return
      */
-    int[][] boringWorld(int seed){
+    void boringWorld(int seed){
         Random random = new Random(seed);
         int room_num = RandomUtils.uniform(random,20);
-        int[][] map = new int[WIDTH][HEIGHT];
+        map = new int[WIDTH][HEIGHT];
+
         //store the room position and area after it has been generated.
         List<int[]> list = new ArrayList<>();
 
@@ -82,34 +88,34 @@ public class HexWorld {
             //make sure the room height between 2 and 7;
             int h = RandomUtils.uniform(random,2,7);
             //make the room x position will not exceed the game boundary
-            int x = RandomUtils.uniform(random,2,WIDTH - w);
+            int nx = RandomUtils.uniform(random,2,WIDTH - w);
             //the same as the previous
-            int y = RandomUtils.uniform(random,2,HEIGHT - h);
+            int ny = RandomUtils.uniform(random,2,HEIGHT - h);
             //remember the new room disjoint the previous rooms added to map before
             boolean flag = false;
             for(int i = 0;i < w;i++){
                 for(int j = 0;j < h;j++){
-                    if(map[i + x][j + y] == 1){
+                    if(map[i + nx][j + ny] == 1){
                         flag = true;
-                    }else map[i + x][j + y] = 1;
+                    }else map[i + nx][j + ny]= 1;
                 }
             }
-            list.add(new int[]{x,y,w,h});
+            list.add(new int[]{nx,ny,w,h});
             //if the new room is alone ,and we connect the new room with the previous one
             if(!flag && k > 0){
-                unite(list.get(list.size() - 2),list.get(list.size() - 1),map,random);
+                unite(list.get(list.size() - 2),list.get(list.size() - 1));
             }
         }
         //fill the wall ,details see the function
-        fillWall(map);
-        //add a door int the map
+        fillWall();
+        //add a door in the map
         List<int[]> walls = new ArrayList<>();
 
 
         for(int i = 0;i < WIDTH;i++){
             for(int j = 0;j < HEIGHT;j++){
                 if(map[i][j] == 2){
-                    if(map[i - 1][j] + map[i + 1][j] == 1 || map[i][j - 1] + map[i][j + 1] == 1){
+                    if((i - 1 >= 0 && i + 1 < WIDTH) && map[i - 1][j] + map[i + 1][j]  == 1 || ( (j - 1 >= 0 && j + 1 < HEIGHT )&& map[i][j - 1] + map[i][j + 1] == 1)){
                         walls.add(new int[]{i,j});
                     }
                 }
@@ -117,14 +123,13 @@ public class HexWorld {
         }
         int door = RandomUtils.uniform(random,walls.size());
         map[walls.get(door)[0]][walls.get(door)[1]] = 3;
-        return map;
+        put_user_in_game(random);
     }
 
     /**map[i][j] == 1 means this is a floor
      *  what we need to do is add wall to surround the floor
-     * @param map
      */
-    private void fillWall(int[][] map) {
+    private void fillWall() {
         //every floor has 8 tiles surrounding it.
         //so we iterate the 8 tiles and fill a wall when and only when it is not a floor
         int[] dx = {1,1,1,0,0,-1,-1,-1};
@@ -141,31 +146,44 @@ public class HexWorld {
     }
 
     //generate TETile map
-    private void fillWithTile(TETile[][] randomTiles, int[][] map) {
+    public void fillWithTile() {
+        if(world == null){
+            world = new TETile[WIDTH][HEIGHT];
+        }
         for(int i = 0;i < WIDTH;i++){
             for(int j = 0;j < HEIGHT;j++){
                 switch (map[i][j]){
-                    case 2 -> randomTiles[i][j] = Tileset.WALL;
-                    case 1 -> randomTiles[i][j] = Tileset.FLOOR;
-                    case 0 -> randomTiles[i][j] = Tileset.NOTHING;
-                    case 3 -> randomTiles[i][j] = Tileset.LOCKED_DOOR;
-                    default ->randomTiles[i][j] = Tileset.NOTHING;
+                    case 2 -> world[i][j] = Tileset.WALL;
+                    case 1 -> world[i][j] = Tileset.FLOOR;
+                    case 0 -> world[i][j] = Tileset.NOTHING;
+                    case 3 -> world[i][j] = Tileset.LOCKED_DOOR;
+                    case 4 -> world[i][j] = Tileset.PLAYER;
+                    default ->world[i][j] = Tileset.NOTHING;
                 }
             }
         }
     }
-    public static void main(String[] args) {
-        HexWorld hexWorld = new HexWorld();
-        int[][] map = hexWorld.boringWorld(15653516);
-        TERenderer ter = new TERenderer();
-        ter.initialize(hexWorld.WIDTH, hexWorld.HEIGHT);
+    private void put_user_in_game(Random random){
+        List<int[]> floor = new ArrayList<>();
+        for(int  i = 0;i < WIDTH;i++){
+            for(int j = 0;j < HEIGHT;j++){
+                if(map[i][j] == 1){
+                    floor.add(new int[]{i,j});
+                }
+            }
+        }
+        int position = RandomUtils.uniform(random,floor.size());
+        x = floor.get(position)[0];
+        y = floor.get(position)[1];
+        map[x][y] = 4;
+    }
+    public HexWorld(int seed){
+        this.seed = seed;
 
-        TETile[][] randomTiles = new TETile[hexWorld.WIDTH][hexWorld.HEIGHT];
-        //fill the TETile map with map
-        hexWorld.fillWithTile(randomTiles,map);
-        //show the TETile map
-        ter.renderFrame(randomTiles);
+        boringWorld(seed);
     }
 
-
+    public static void main(String[] args) {
+        HexWorld hexWorld = new HexWorld(9088);
+    }
 }
