@@ -1,6 +1,8 @@
 package byog.SaveDemo;
 
 
+import byog.Core.StdDraw;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

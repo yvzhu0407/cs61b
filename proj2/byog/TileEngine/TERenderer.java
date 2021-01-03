@@ -1,6 +1,8 @@
 package byog.TileEngine;
 
 
+import byog.Core.StdDraw;
+
 import java.awt.Color;
 import java.awt.Font;
 
