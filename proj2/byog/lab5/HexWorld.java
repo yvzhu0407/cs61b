@@ -1,10 +1,8 @@
 package byog.lab5;
+
 import byog.Core.RandomUtils;
-import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
-
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,11 +14,13 @@ import java.util.Random;
 public class HexWorld implements Serializable {
     private final int WIDTH = 80;
     private final int HEIGHT = 30;
+    //this variable should not be serializable
     transient public TETile[][] world = null;
+    //mark the position of player
     public int x = -1,y = -1;
-    public int seed = -1;
-    private boolean inital = false;
-    private int[][] map = null;
+    //seed is the key corresponded to the world
+    public int seed;
+    public int[][] map = null;
     private static final long serialVersionUID = 12345654321789L;
     //unite the two room
     void unite(int[] r1,int[] r2){
@@ -34,7 +34,7 @@ public class HexWorld implements Serializable {
         //we draw vertical line at mx which is the middle of mx1 and mx2
         //and the line is from min(my1,my2) to max(my1,my2)
 
-        /**
+        /** hh
          *                  ····
          *          ·       ·  ·
          * ·····    ·       ····
@@ -71,8 +71,7 @@ public class HexWorld implements Serializable {
      * 1. generate the numbers of rooms of this game by the seed;
      * 2. connect the disjointed rooms with hallways.
      * 3. fill the wall at last;
-     * @param seed
-     * @return
+     * @param seed key to a world
      */
     void boringWorld(int seed){
         Random random = new Random(seed);
@@ -155,7 +154,6 @@ public class HexWorld implements Serializable {
                 switch (map[i][j]){
                     case 2 -> world[i][j] = Tileset.WALL;
                     case 1 -> world[i][j] = Tileset.FLOOR;
-                    case 0 -> world[i][j] = Tileset.NOTHING;
                     case 3 -> world[i][j] = Tileset.LOCKED_DOOR;
                     case 4 -> world[i][j] = Tileset.PLAYER;
                     default ->world[i][j] = Tileset.NOTHING;
@@ -163,7 +161,9 @@ public class HexWorld implements Serializable {
             }
         }
     }
-    private void put_user_in_game(Random random){
+    //put a player into game
+    //maybe it should be integrated with add door function
+    public void put_user_in_game(Random random){
         List<int[]> floor = new ArrayList<>();
         for(int  i = 0;i < WIDTH;i++){
             for(int j = 0;j < HEIGHT;j++){
@@ -179,11 +179,6 @@ public class HexWorld implements Serializable {
     }
     public HexWorld(int seed){
         this.seed = seed;
-
         boringWorld(seed);
-    }
-
-    public static void main(String[] args) {
-        HexWorld hexWorld = new HexWorld(9088);
     }
 }
