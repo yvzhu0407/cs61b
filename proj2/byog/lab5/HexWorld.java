@@ -152,11 +152,21 @@ public class HexWorld implements Serializable {
         for(int i = 0;i < WIDTH;i++){
             for(int j = 0;j < HEIGHT;j++){
                 switch (map[i][j]){
-                    case 2 -> world[i][j] = Tileset.WALL;
-                    case 1 -> world[i][j] = Tileset.FLOOR;
-                    case 3 -> world[i][j] = Tileset.LOCKED_DOOR;
-                    case 4 -> world[i][j] = Tileset.PLAYER;
-                    default ->world[i][j] = Tileset.NOTHING;
+                    case 1 :
+                        world[i][j] = Tileset.FLOOR;
+                        break;
+                    case 2 :
+                        world[i][j] = Tileset.WALL;
+                        break;
+                    case 3 :
+                        world[i][j] = Tileset.LOCKED_DOOR;
+                        break;
+                    case 4 :
+                        world[i][j] = Tileset.PLAYER;
+                        break;
+                    default :
+                        world[i][j] = Tileset.NOTHING;
+                        break;
                 }
             }
         }
