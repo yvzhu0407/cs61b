@@ -4,8 +4,12 @@ import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 import byog.lab5.HexWorld;
-import byog.util.StdDraw;
-import java.io.*;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.File;
+import java.io.IOException;
 
 public class Game {
     TERenderer ter = new TERenderer();
@@ -20,30 +24,30 @@ public class Game {
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
-        if(!isPlayerRound){
+        if( !isPlayerRound ) {
             initStdDraw();
         }
         tenderMain();
-        while (true) {
-            if (StdDraw.hasNextKeyTyped()) {
+        while ( true ) {
+            if ( StdDraw.hasNextKeyTyped() ) {
                 char c = StdDraw.nextKeyTyped();
-                switch (c) {
+                switch ( c ) {
                     case 'N':
                         tenderTips();
                         StringBuilder sb = new StringBuilder();
-                        while(true){
-                            if(StdDraw.hasNextKeyTyped()) {
+                        while( true ) {
+                            if( StdDraw.hasNextKeyTyped() ) {
                                 char c1 = StdDraw.nextKeyTyped();
-                                if (c1 <= '9' && c1 >= '0') {
-                                    sb.append(c1);
+                                if ( c1 <= '9' && c1 >= '0') {
+                                    sb.append( c1 );
                                 } else {
                                     break;
                                 }
                             }
                         }
-                        seed = Integer.parseInt(sb.toString());
-                        System.out.println(seed);
-                        hexWorld = new HexWorld(seed);
+                        seed = Integer.parseInt( sb.toString() );
+//                        System.out.println( seed );
+                        hexWorld = new HexWorld( seed );
                         hexWorld.fillWithTile();
                         ter.renderFrame(hexWorld.world);
                         isPlayerRound = true;
@@ -70,8 +74,8 @@ public class Game {
         //change it to play with string
         // and play with key word should use the same fuction;
 //        StringBuilder sb = new StringBuilder();
-        while(isPlayerRound){
-            if(StdDraw.hasNextKeyTyped()){
+        while( isPlayerRound ){
+            if( StdDraw.hasNextKeyTyped() ){
                 char ch = StdDraw.nextKeyTyped();
                 boolean flag = true;
                 if(ch == 'A' || ch == 'D' || ch == 'S' || ch == 'W'){

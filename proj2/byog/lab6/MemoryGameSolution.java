@@ -2,8 +2,6 @@ package byog.lab6;
 
 
 
-import byog.util.StdDraw;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.util.Random;

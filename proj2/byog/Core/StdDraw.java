@@ -1,4 +1,4 @@
-package byog.util; /******************************************************************************
+package byog.Core; /******************************************************************************
  *  Compilation:  javac StdDraw.java
  *  Execution:    java StdDraw
  *  Dependencies: none

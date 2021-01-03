@@ -1,8 +1,6 @@
 package byog.SaveDemo;
 
 
-import byog.util.StdDraw;
-
 import java.io.Serializable;
 import java.awt.Color;
 
